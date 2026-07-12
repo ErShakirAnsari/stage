@@ -11,9 +11,28 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="https://cdn.jsdelivr.net/gh/ershakiransari/stage@master/cleave/assets/index-B2yCHvr2.js">
+    <script>
+      // Applied before the app mounts so there's no flash of the wrong
+      // theme. React re-derives and re-applies the same value on load.
+      (function () {
+        try {
+          var raw = localStorage.getItem('cleave:settings');
+          var theme = raw ? JSON.parse(raw).theme : 'system';
+          var resolved =
+            theme === 'light' || theme === 'dark'
+              ? theme
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+          document.documentElement.setAttribute('data-theme', resolved);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="https://cdn.jsdelivr.net/gh/ershakiransari/stage@master/cleave/assets/index-C2cZOluZ.js">
 </script>
-    <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/ershakiransari/stage@master/cleave/assets/index-AB62VAFW.css">
+    <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/ershakiransari/stage@master/cleave/assets/index-i2K6aTtW.css">
   </head>
   <body>
     <div id="root">
