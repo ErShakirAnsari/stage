@@ -7,6 +7,68 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>404 | Resource not found</title>
+
+	<script>
+	  // ============================================================
+  	  // GitHub Pages multi-app 404 dispatcher
+	  // ------------------------------------------------------------
+	  // This repo hosts multiple SPAs (Angular etc.) under one GH Pages
+	  // site. GH Pages has no server-side routing, so any deep link or
+	  // refresh inside an app (e.g. OAuth callback URLs like
+	  // /stage/cv/editor/oauth/callback) results in a real 404, since
+	  // no actual file exists at that path.
+	  //
+	  // This script runs on that 404 page. It checks which app the
+	  // broken URL was meant for, then redirects to that app's real
+	  // index.html, passing the original path/query/hash along as a
+	  // "?p=" param so the app can restore it once it loads.
+	  //
+	  // If the URL doesn't match any known app, this script does
+	  // nothing and the normal 404 page below is shown instead.
+	  // ============================================================
+
+	  // Base path of the GH Pages project site (repo name), since this
+	  // site lives at username.github.io/stage/... not the domain root.
+	  var repo = '/stage/';
+
+	  // List of app folders hosted in this repo.
+	  // IMPORTANT: use the path to each app's ACTUAL deployed root
+	  // (i.e. where its real index.html lives), not just the top-level
+	  // folder name, if the app is nested deeper (like cv/editor).
+	  var apps = ['cleave', 'cv/editor', 'fallout-shelter-editor', 'gayya'];
+
+	  // The path that caused this 404, e.g. '/stage/cv/editor/oauth/callback'
+	  var path = window.location.pathname;
+
+	  // Strip the '/stage/' prefix so we can compare against plain app names,
+	  // e.g. 'cv/editor/oauth/callback'
+	  var rest = path.startsWith(repo) ? path.slice(repo.length) : path;
+
+	  // Find which known app this path belongs to, by checking which
+	  // app name it starts with (the trailing '/' avoids partial-name
+	  // false matches, e.g. 'cv' matching 'cv-something').
+	  var appFolder = apps.find(function (a) { return rest.indexOf(a + '/') === 0; });
+
+	  if (appFolder) {
+    	// Everything AFTER the matched app folder — this is the "real"
+	    // in-app route the user/OAuth server was trying to reach.
+    	// e.g. '/oauth/callback' + '?code=...&state=...' (+ hash if any)
+    	var tail = path.slice((repo + appFolder).length) + window.location.search + window.location.hash;
+
+	    // Redirect to the app's real index.html, smuggling the original
+    	// route+query+hash through as an encoded '?p=' param.
+	    // Using replace() (not assign()) so this 404 detour doesn't
+    	// clutter browser history / break the back button.
+    	//
+	    // NOTE: the app's index.html MUST have a companion script that
+    	// reads '?p=' and restores the real URL via history.replaceState
+	    // BEFORE the app's router initializes — otherwise the router
+    	// will see '/appFolder/?p=...' instead of the real route.
+    	window.location.replace(repo + appFolder + '/?p=' + encodeURIComponent(tail));
+	  }
+	  // else: no matching app — do nothing, let the styled 404 page
+	  // below render normally (this really is a broken/unknown URL).
+	</script>
 		
 	<style>
 		@-webkit-keyframes cursor-blink	{0%{opacity:0}	50%{opacity:1}	100%{opacity:0}}
@@ -19,7 +81,6 @@
 		.terminal .prompt:before{content:">  ";display:inline-block}
 		.terminal .new-output{display:inline-block}
 		.terminal .new-output:after{display:inline-block;vertical-align:-.15em;width:.75em;height:1em;margin-left:5px;background:#1ff042;box-shadow:1px 1px 1px rgba(31,240,66,.65),-1px -1px 1px rgba(31,240,66,.65),1px -1px 1px rgba(31,240,66,.65),-1px 1px 1px rgba(31,240,66,.65);-webkit-animation:cursor-blink .9s steps(1) infinite;-moz-animation:cursor-blink .9s steps(1) infinite;animation:cursor-blink .9s steps(1) infinite;content:""}
-
 	</style>
 </head>
 
